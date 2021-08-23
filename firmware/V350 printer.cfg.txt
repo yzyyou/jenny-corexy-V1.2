@@ -1,0 +1,432 @@
+[include kiauh_macros.cfg]
+[mcu]
+serial:  /dev/ttyUSB0
+restart_method: command
+
+#[menu __main __octoprint]
+#type: disabled
+
+
+[pause_resume]
+
+[display_status]
+
+[virtual_sdcard]
+path: ~/gcode_files
+
+[printer]
+kinematics: corexy
+max_velocity: 250
+max_accel: 6000
+#max_accel_to_decel : 7000
+max_z_velocity: 60
+max_z_accel: 600
+
+
+[stepper_x]
+step_pin: PB2
+dir_pin: !PA0
+enable_pin: !PE2
+step_distance: 0.0125
+endstop_pin: !PD12
+position_endstop: 350
+position_max: 350
+homing_speed: 190
+homing_retract_dist: 0
+
+[stepper_y]
+step_pin: PC14
+dir_pin: !PE6
+enable_pin: !PC15
+step_distance: 0.0125
+endstop_pin: !PA11
+position_endstop: 350
+position_max: 350
+homing_speed: 190
+homing_retract_dist: 0
+
+
+## Z0 Stepper - Front Left
+[stepper_z]
+step_pin: PE5
+dir_pin: !PE4
+enable_pin: !PC13
+step_distance: 0.00125
+endstop_pin: !PE1
+position_endstop: 3.9 #modfiy this when nozzle changed.more small more far.
+position_max: 350
+homing_speed: 20
+position_min: -10.0
+second_homing_speed: 3.0
+homing_retract_dist: 3.0
+
+##      Z1 Stepper - Rear Left
+[stepper_z1]
+step_pin: PA1
+dir_pin: PB0
+enable_pin: !PC5
+step_distance: 0.00125
+
+##      Z2 Stepper - Rear Right
+[stepper_z2]
+step_pin: PC4
+dir_pin: !PE3
+enable_pin: !PB1
+step_distance: 0.00125
+
+##      Z3 Stepper - Front Right
+[stepper_z3]
+step_pin: PB3 
+dir_pin: PB4
+enable_pin: !PB5
+#step_distance: 0.0015625
+step_distance: 0.00125
+
+
+[extruder]
+## STP -> step pin
+step_pin: PE8
+## FR -> dir pin
+dir_pin: PE7
+## ST -> enable pin
+enable_pin: !PE9
+#step_distance: .00194
+step_distance: .0048
+nozzle_diameter: 0.400
+filament_diameter: 1.750
+heater_pin: !PC6 # Heat0
+sensor_pin:  PC0 # T1 Header
+#sensor_type: PT100 INA826
+sensor_type: EPCOS 100K B57560G104F
+control: pid
+#pid_Kp=17.186 pid_Ki=0.556 pid_Kd=132.761
+pid_Kp: 23.034
+pid_Ki: 0.704
+pid_Kd: 188.3
+min_temp: -20
+max_temp: 350
+max_extrude_cross_section:100
+##      Try to keep pressure_advance below 1.0
+pressure_advance: 0.046
+##      Default is 0.040, leave stock
+pressure_advance_smooth_time: 0.040
+max_extrude_only_velocity:100
+max_extrude_only_accel:3000
+
+[verify_heater extruder]
+#max_error: 120
+#   The maximum "cumulative temperature error" before raising an
+#   error. Smaller values result in stricter checking and larger
+#   values allow for more time before an error is reported.
+#   Specifically, the temperature is inspected once a second and if it
+#   is close to the target temperature then an internal "error
+#   counter" is reset; otherwise, if the temperature is below the
+#   target range then the counter is increased by the amount the
+#   reported temperature differs from that range. Should the counter
+#   exceed this "max_error" then an error is raised. The default is
+#   120.
+#check_gain_time: 15
+#   This controls heater verification during initial heating. Smaller
+#   values result in stricter checking and larger values allow for
+#   more time before an error is reported. Specifically, during
+#   initial heating, as long as the heater increases in temperature
+#   within this time frame (specified in seconds) then the internal
+#   "error counter" is reset. The default is 20 seconds for extruders
+#   and 60 seconds for heater_bed.
+#hysteresis: 3
+#   The maximum temperature difference (in Celsius) to a target
+#   temperature that is considered in range of the target. This
+#   controls the max_error range check. It is rare to customize this
+#   value. The default is 5.
+#heating_gain: 6
+#   The minimum temperature (in Celsius) that the heater must increase
+#   by during the check_gain_time check. It is rare to customize this
+#   value. The default is 2.
+
+[heater_bed]
+heater_pin: !PB13
+sensor_pin: PC1
+##      Thermistor Types
+##   "EPCOS 100K B57560G104F"
+##   "ATC Semitec 104GT-2"
+##   "NTC 100K beta 3950"
+##   "Honeywell 100K 135-104LAG-J01"
+##   "NTC 100K MGB18-104F39050L32" (Keenovo Heater Pad)
+##   "AD595"
+##   "PT100 INA826"
+sensor_type: EPCOS 100K B57560G104F
+control: watermark
+min_temp: 0
+max_temp: 120
+
+
+[probe]
+pin: PC8
+x_offset: 0
+y_offset: 25.0
+z_offset: 0
+speed: 10.0
+samples: 2
+samples_result: average
+sample_retract_dist: 3.0
+samples_tolerance: 0.05
+samples_tolerance_retries: 3
+
+
+[fan]
+pin: !PB6
+kick_start_time: 0.5
+off_below: 0.10
+cycle_time: 0.001
+
+[heater_fan fan1]
+pin: !PB8
+max_power: 1.0
+kick_start_time: 0.5
+heater: extruder
+heater_temp: 50.0
+
+
+[heater_fan controller_fan]
+pin: !PB9
+kick_start_time: 0.500
+heater: heater_bed
+heater_temp: 45.0
+
+#[heater_fan exhaust_fan]
+#pin: z:P2.7
+#max_power: 1.0
+#shutdown_speed: 0.0
+#kick_start_time: 5.0
+#heater: heater_bed
+#heater_temp: 60
+#fan_speed: 1.0
+
+
+
+#[heater_fan fan2]
+#pin: PE6
+
+[skew_correction]
+
+
+#[idle_timeout]
+#timeout: 1800
+
+[force_move]
+enable_force_move: true
+#   Set to true to enable FORCE_MOVE and SET_KINEMATIC_POSITION
+#   extended G-Code commands. The default is false.
+
+[homing_override]
+axes: z
+set_position_z: 0
+gcode:
+   SET_PIN PIN=Z_ENABLE VALUE=100
+   G90
+   G0 Z50 F1200
+   G28 X Y 
+   G0 X280 Y320 F4800
+   G28 Z
+   G0 Z50 F1200
+   G0 X240  F4800
+
+
+[quad_gantry_level]
+gantry_corners:
+        -60,-10
+        340,360
+#       Probe points
+points:
+	10,10
+	10,270
+	310,270
+        310,10	
+speed: 80
+horizontal_move_z:35
+retries: 5
+retry_tolerance: 0.04
+max_adjust: 90
+
+
+
+#####################################################################
+#       Macros
+#####################################################################
+[output_pin case_light]
+pin: !PA3
+pwm: true
+shutdown_value: 0
+cycle_time: 0.01
+scale: 255
+
+[output_pin Z_ENABLE]
+pin: !PC7
+pwm: true
+shutdown_value: 0
+cycle_time: 0.01
+scale: 100
+
+[gcode_button POWER_OFF_KEY]
+pin:PA15
+press_gcode:
+        SET_PIN PIN=POWER_OFF VALUE=100
+
+[output_pin POWER_OFF]
+#pin: !PA15
+pin: !PB12
+pwm: true
+shutdown_value: 0
+cycle_time: 0.01
+scale: 100
+
+
+[gcode_macro M355]
+variable_light_before: 0
+default_parameter_S: 0
+default_parameter_P: 0
+gcode:
+        SET_PIN PIN=case_light VALUE={S|float * P|float}
+
+
+
+[gcode_macro ENDSTOPS_PROBE_STATUS]
+gcode:
+        QUERY_ENDSTOPS
+        QUERY_PROBE
+
+
+[gcode_macro TEST_X]
+gcode:        
+        STEPPER_BUZZ STEPPER=stepper_x 
+
+[gcode_macro TEST_Y]
+gcode:        
+        STEPPER_BUZZ STEPPER=stepper_y 
+
+[gcode_macro TEST_Z0]
+gcode:   
+        STEPPER_BUZZ STEPPER=stepper_z
+
+[gcode_macro TEST_Z1]
+gcode:   
+        STEPPER_BUZZ STEPPER=stepper_z1
+
+[gcode_macro TEST_Z2]
+gcode:   
+        STEPPER_BUZZ STEPPER=stepper_z2
+
+[gcode_macro TEST_Z3]
+gcode:   
+        STEPPER_BUZZ STEPPER=stepper_z3
+
+[gcode_macro LIGHT_ON]
+gcode:
+        M355 S1 P255
+
+[gcode_macro LIGHT_OFF]
+gcode:
+        M355 S0 P0
+
+[gcode_macro MOUNT_PROBE]
+gcode:
+        G1 X220 Y300 F3600;
+        G1 X220 Y350 F3600;
+        G1 X180 Y350 F3600;
+        G1 X180 Y300 F3600;
+
+[gcode_macro UMOUNT_PROBE]
+gcode:
+        G1 X180 Y300 F3600;
+        G1 X180 Y350 F3600;
+        G1 X220 Y350 F3600;
+        G1 X220 Y300 F3600;
+
+[gcode_macro UNLOCK_Z_MOVE]
+gcode:
+        SET_PIN PIN=Z_ENABLE VALUE=100
+
+[gcode_macro ENABLE_Z_MOVE]
+gcode:        
+        SET_STEPPER_ENABLE STEPPER=stepper_z ENABLE=1
+        SET_STEPPER_ENABLE STEPPER=stepper_z1 ENABLE=1
+        SET_STEPPER_ENABLE STEPPER=stepper_z2 ENABLE=1
+        SET_STEPPER_ENABLE STEPPER=stepper_z3 ENABLE=1
+        SET_PIN PIN=Z_ENABLE VALUE=100
+
+[gcode_macro FORCE_POWER_OFF]
+gcode:
+        SET_PIN PIN=POWER_OFF VALUE=100
+
+[gcode_macro G32]
+gcode:
+    #BED_MESH_CLEAR
+    G28
+    MOUNT_PROBE
+    QUAD_GANTRY_LEVEL
+    UMOUNT_PROBE
+    G28
+    G0 X250 Y250 Z20 F1200
+
+
+
+[gcode_macro POWER_LOSS]
+description: in the actual running print power loss happen
+gcode:
+    
+    SET_PIN PIN=case_light VALUE=0.00 SAVE=0
+    #SET_FAN_SPEED controller_fan=0
+    #SET_FAN_SPEED fan=0
+    #SET_FAN_SPEED fan1=0
+    M106 S0
+    #################
+    ##### set defaults #####
+    #{% set x = params.X|default(230) %}      #edit to your park position
+    #{% set y = params.Y|default(230) %}      #edit to your park position
+    #{% set z = params.Z|default(10)|float %} #edit to your park position
+    #{% set e = params.E|default(1) %}        #edit to your retract length
+    ##### calculate save lift position #####
+  
+    #{%set min_extrude_temp = printer.configfile.settings["extruder"]["min_extrude_temp"]|int %}
+    #{%set act_extrude_temp = printer.extruder.temperature|int %}
+    
+    #SAVE_GCODE_STATE NAME=PAUSE_state
+    
+    
+    PAUSE
+    TURN_OFF_HEATERS
+    ##### end of definitions #####
+   
+    
+        
+    M117 unexpected power off happened
+
+    
+
+[gcode_macro PRINT_START]
+#   Use PRINT_START for the slicer starting script - please customise for your slicer of choice
+gcode:
+    SET_SKEW XY=140.6,140.8,99.94
+    #G28                            ; home all axes
+    G32
+    G1 Z20 F3000                   ; move nozzle away from bed
+    G1 X30 Y0 Z0.3 F3000
+    G92 E0
+    G1 X40 E20 F100
+    G1 X50 F2100
+    G92 E0
+
+[gcode_macro PRINT_END]
+#   Use PRINT_END for the slicer ending script - please customise for your slicer of choice
+gcode:
+    M400                           ; wait for buffer to clear
+    G92 E0                         ; zero the extruder
+    G1 E-10.0 F3600                ; retract filament
+    G91                            ; relative positioning
+    G0 Z1.00 X20.0 Y25.0 F20000    ; move nozzle to remove stringing
+    TURN_OFF_HEATERS
+    M107                           ; turn off fan
+    G1 Z2 F3000                    ; move nozzle up 2mm
+    G90                            ; absolute positioning
+    G0  X125 Y250 F3600            ; park nozzle at rear
+    SET_SKEW CLEAR=1
