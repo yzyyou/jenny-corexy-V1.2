@@ -1,0 +1,106 @@
+################################################################################
+# ~~~~~~~~~~~~~~~~~~~~~~~~  AUTOCREATED WITH KIAUH  ~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+################################################################################
+# Recommended macros and config entries if you use Mainsail or Fluidd!         #
+# You can edit or delete those macros if you already defined them elsewhere!   #
+################################################################################
+
+
+[pause_resume]
+
+[display_status]
+
+[gcode_macro CANCEL_PRINT]
+rename_existing: BASE_CANCEL_PRINT
+gcode:
+    TURN_OFF_HEATERS
+    CLEAR_PAUSE
+    SDCARD_RESET_FILE
+    BASE_CANCEL_PRINT
+    SET_STATUS_PAUSE
+    SET_STATUS_PAUSE
+    M117 printing canceled!
+    G91
+    G1 E-2 F2100
+    G90
+    G28 X F6000
+[gcode_macro PAUSE]
+rename_existing: BASE_PAUSE
+gcode:
+    ##### set defaults #####
+    {% set x = params.X|default(230) %}      #edit to your park position
+    {% set y = params.Y|default(230) %}      #edit to your park position
+    {% set z = params.Z|default(10)|float %} #edit to your park position
+    {% set e = params.E|default(1) %}        #edit to your retract length
+    ##### calculate save lift position #####
+    {% set max_z = printer.toolhead.axis_maximum.z|float %}
+    {% set act_z = printer.toolhead.position.z|float %}
+    {% set lift_z = z|abs %}
+    {% if act_z < (max_z - lift_z) %}
+        {% set z_safe = lift_z %}
+    {% else %}
+        {% set z_safe = max_z - act_z %}
+    {% endif %}
+    ##### end of definitions #####
+    SAVE_GCODE_STATE NAME=PAUSE_state
+    BASE_PAUSE
+    G91
+    G1 E-{e} F2100
+    G1 Z{z_safe}
+    G90
+    G1 X{x} Y{y} F6000
+
+    {%set target_extrude_temp = printer.extruder.target|int %}
+    {%set target_bed_temp = printer.heater_bed.target|int %}
+    
+    M140 S{target_bed_temp} 
+    M104 S{target_extrude_temp}  T0
+    
+    #### get VELOCITY parameter if specified ####
+    GET_POSITION
+    SET_STATUS_PAUSE
+    M117 printing paused!
+
+
+[gcode_macro RESUME]
+description: Resume the actual running print
+rename_existing: RESUME_BASE
+gcode:
+    M117 waiting for target temperature...
+    RESUME_LAST_HEATERS
+    SET_PIN PIN=Z_ENABLE VALUE=100
+    
+    ##### set defaults #####
+    {% set e = params.E|default(1) %} #edit to your retract length
+    {%set min_extrude_temp = printer.configfile.settings["extruder"]["min_extrude_temp"]|int %}
+    {%set act_extrude_temp = printer.extruder.temperature|int %}
+    #### get VELOCITY parameter if specified ####
+    {% if 'VELOCITY' in params|upper %}
+      {% set get_params = ('VELOCITY=' + params.VELOCITY)  %}
+    {%else %}
+      {% set get_params = "" %}
+    {% endif %}
+    ##### end of definitions #####
+
+    #G4 P1000
+    G91
+    {% if act_extrude_temp > min_extrude_temp %}
+      G1 E{e} F2100
+    {% else %}
+      {action_respond_info("Extruder not hot enough")}
+    {% endif %}  
+    RESUME_BASE {get_params}
+    M117 printing resumed succeed!
+
+    ##### set defaults #####
+    #{% set e = params.E|default(1) %} #edit to your retract length
+    #G91
+    #G1 E{e} F2100
+    #G90
+    RESTORE_GCODE_STATE NAME=PAUSE_state MOVE=1
+    #BASE_RESUME
+    SET_STATUS_PRINTING
+
+
+################################################################################
+################################################################################
